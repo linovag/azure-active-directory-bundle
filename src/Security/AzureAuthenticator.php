@@ -81,7 +81,7 @@ class AzureAuthenticator extends SocialAuthenticator
         $name = $userInfo->claim('name');
 
         /** @var User $user */
-        $user = $userProvider->loadUserByIdentifier($email);
+        $user = $userProvider->loadUserByUsername($email);
         $user->setFullName($name);
 
         return $user;

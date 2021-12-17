@@ -42,6 +42,6 @@ class AzureUserProvider implements UserProviderInterface
 
     public function supportsClass($class): bool
     {
-        return $class === 'OpcodingAADBundle\Entity\User';
+        return $class === 'OpcodingAADBundle\Model\User';
     }
 }
