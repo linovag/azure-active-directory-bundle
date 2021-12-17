@@ -4,6 +4,7 @@ namespace OpcodingAADBundle\Controller;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -19,9 +20,9 @@ class AzureController extends AbstractController
      * @Route("/login", name="connect_azure")
      *
      * @param ClientRegistry $clientRegistry
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     * @return RedirectResponse
      */
-    public function connect(ClientRegistry $clientRegistry)
+    public function connect(ClientRegistry $clientRegistry): RedirectResponse
     {
         return $clientRegistry
             ->getClient('azure')
@@ -33,9 +34,9 @@ class AzureController extends AbstractController
      *
      * @Route("/login-azure", name="connect_azure_check")
      *
-     * @return JsonResponse|\Symfony\Component\HttpFoundation\RedirectResponse
+     * @return JsonResponse|RedirectResponse
      */
-    public function connectCheck()
+    public function connectCheck(): RedirectResponse|JsonResponse
     {
         if (!$this->getUser()) {
             return new JsonResponse([

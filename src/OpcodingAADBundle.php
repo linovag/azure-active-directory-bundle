@@ -1,4 +1,5 @@
 <?php
+
 namespace OpcodingAADBundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;

@@ -1,4 +1,5 @@
 <?php
+
 namespace OpcodingAADBundle\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;

@@ -3,13 +3,12 @@
     "type": "project",
     "license": "proprietary",
     "require": {
-        "php": "^7.2.0",
-        "knpuniversity/oauth2-client-bundle": "^1.25",
-        "symfony/yaml": "4.*",
-        "thenetworg/oauth2-azure": "^1.4",
-        "symfony/validator": "4.*",
-        "symfony/security-bundle": "4.*",
-        "doctrine/orm": "^2.6"
+        "php": "^8.0",
+        "knpuniversity/oauth2-client-bundle": "^2.9",
+        "symfony/yaml": "^5.4",
+        "thenetworg/oauth2-azure": "^2.0",
+        "symfony/validator": "^5.4",
+        "symfony/security-bundle": "^5.4"
     },
     "autoload": {
         "psr-4": {
