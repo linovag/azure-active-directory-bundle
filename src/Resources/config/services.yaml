@@ -1,9 +1,14 @@
 services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
     OpcodingAADBundle\Security\AzureAuthenticator:
-        class: OpcodingAADBundle\Security\AzureAuthenticator
         arguments:
             - '@KnpU\OAuth2ClientBundle\Client\ClientRegistry'
-            - '@doctrine.orm.entity_manager'
+
+    OpcodingAADBundle\Security\AzureUserProvider:
+        arguments:
 
     OpcodingAADBundle\Controller\:
         resource: '../../Controller'

@@ -1,5 +1,7 @@
 # Active azure directory bundle
-Active azure directory bundle for symfony 4 project
+Active azure directory bundle for symfony 5 project
+
+This is a fork of https://github.com/opcoding/azure-active-directory-bundle
 
 ### Routing
 
@@ -21,14 +23,16 @@ return [
 Edit de `config/packages/knpu_oauth2_client.yml` file and add the following code : 
 ```yaml
 knpu_oauth2_client:
-    clients:
-        azure:
-            type: azure
-            client_id: '%env(resolve:AZURE_CLIENT_ID)%'
-            client_secret: '%env(resolve:AZURE_CLIENT_SECRET)%'
-            redirect_route: connect_azure_check
-            redirect_params: {}
-            api_version: '1.6'
+  clients:
+    azure:
+      # must be "azure" - it activates that type!
+      type: azure
+      # add and set these environment variables in your .env files
+      client_id: '%env(OAUTH_AZURE_CLIENT_ID)%'
+      client_secret: '%env(OAUTH_AZURE_CLIENT_SECRET)%'
+      # a route name you'll create
+      redirect_route: connect_azure_check
+      redirect_params: { }
 ```
 
 
@@ -36,41 +40,26 @@ Then edit the `config/packages/security.yml` and add the following code accordin
 
 ```yaml
 security:
+    enable_authenticator_manager: true
+
     providers:
-        app:
-            entity:
-                class: OpcodingAADBundle:User
-                property: username
+        user:
+            id: OpcodingAADBundle\Security\AzureUserProvider
+
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
+            provider: user
             pattern: ^/
-            anonymous: ~
             logout:
                 path: app_logout
                 target: /
             guard:
                 authenticators:
                     - OpcodingAADBundle\Security\AzureAuthenticator
-```
 
-For example, if your application request that all the users must be logged in you can configure it like that :
-
-
-```yaml
-security:
-    firewalls:
-        main:
-            pattern: ^/
-            anonymous: true
-            logout:
-                path: app_logout
-                target: /
-            guard:
-                authenticators:
-                    - OpcodingAADBundle\Security\AzureAuthenticator
     access_control:
         - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/, role: ROLE_USER }

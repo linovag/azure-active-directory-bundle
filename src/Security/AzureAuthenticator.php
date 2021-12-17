@@ -1,8 +1,10 @@
 <?php
+
 namespace OpcodingAADBundle\Security;
 
-use Doctrine\ORM\EntityManagerInterface;
-use OpcodingAADBundle\Entity\User;
+use KnpU\OAuth2ClientBundle\Client\OAuth2ClientInterface;
+use League\OAuth2\Client\Token\AccessToken;
+use OpcodingAADBundle\Model\User;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use KnpU\OAuth2ClientBundle\Security\Authenticator\SocialAuthenticator;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -10,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use TheNetworg\OAuth2\Client\Provider\AzureResourceOwner;
 
@@ -20,22 +23,19 @@ use TheNetworg\OAuth2\Client\Provider\AzureResourceOwner;
  */
 class AzureAuthenticator extends SocialAuthenticator
 {
-    /** @var ClientRegistry */
-    protected $clientRegistry;
-
-    /** @var EntityManagerInterface */
-    protected $em;
+    /**
+     * @var ClientRegistry
+     */
+    protected ClientRegistry $clientRegistry;
 
     /**
      * AzureAuthenticator constructor.
      *
      * @param ClientRegistry         $clientRegistry
-     * @param EntityManagerInterface $em
      */
-    public function __construct(ClientRegistry $clientRegistry, EntityManagerInterface $em)
+    public function __construct(ClientRegistry $clientRegistry)
     {
         $this->clientRegistry = $clientRegistry;
-        $this->em = $em;
     }
 
     /**
@@ -45,7 +45,7 @@ class AzureAuthenticator extends SocialAuthenticator
      *
      * @return bool
      */
-    public function supports(Request $request)
+    public function supports(Request $request): bool
     {
         return $request->getPathInfo() === '/login-azure' && $request->isMethod('GET');
     }
@@ -54,9 +54,9 @@ class AzureAuthenticator extends SocialAuthenticator
      * Retrieve the credentials for the user
      *
      * @param Request $request
-     * @return \League\OAuth2\Client\Token\AccessToken|mixed
+     * @return AccessToken
      */
-    public function getCredentials(Request $request)
+    public function getCredentials(Request $request): AccessToken
     {
         return $this->fetchAccessToken($this->getAzureClient());
     }
@@ -67,45 +67,30 @@ class AzureAuthenticator extends SocialAuthenticator
      * @param mixed $credentials
      * @param UserProviderInterface $userProvider
      *
-     * @return User|object|\Symfony\Component\Security\Core\User\UserInterface|null
+     * @return UserInterface
      */
-    public function getUser($credentials, UserProviderInterface $userProvider)
+    public function getUser($credentials, UserProviderInterface $userProvider): UserInterface
     {
         /** @var AzureResourceOwner $userInfo */
         $userInfo = $this
             ->getAzureClient()
-            ->fetchUserFromToken($credentials);
+            ->fetchUserFromToken($credentials)
+        ;
 
         $email = $userInfo->claim('upn') ?: $userInfo->claim('unique_name');
         $name = $userInfo->claim('name');
 
-        /**
-         * Find the user by it's email
-         * If it does not exists => create it
-         */
-        $user = $this
-            ->em
-            ->getRepository(User::class)
-            ->findOneBy([
-                'email' => $email
-            ]);
-
-        if (null === $user) {
-            $user = new User();
-            $user->setUsername($email);
-            $user->setFullname($name);
-
-            $this->em->persist($user);
-            $this->em->flush();
-        }
+        /** @var User $user */
+        $user = $userProvider->loadUserByIdentifier($email);
+        $user->setFullName($name);
 
         return $user;
     }
 
     /**
-     * @return \KnpU\OAuth2ClientBundle\Client\OAuth2Client
+     * @return OAuth2ClientInterface
      */
-    protected function getAzureClient()
+    protected function getAzureClient(): OAuth2ClientInterface
     {
         return $this
             ->clientRegistry
@@ -115,7 +100,7 @@ class AzureAuthenticator extends SocialAuthenticator
     /**
      * {@inheritdoc}
      */
-    public function start(Request $request, AuthenticationException $authException = null)
+    public function start(Request $request, AuthenticationException $authException = null): RedirectResponse|Response
     {
         return new RedirectResponse('/login');
     }
@@ -123,7 +108,7 @@ class AzureAuthenticator extends SocialAuthenticator
     /**
      * {@inheritdoc}
      */
-    public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
+    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
         $message = strtr($exception->getMessageKey(), $exception->getMessageData());
 
@@ -133,7 +118,7 @@ class AzureAuthenticator extends SocialAuthenticator
     /**
      * {@inheritdoc}
      */
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey): ?Response
     {
         // on success, let the request continue
         return null;

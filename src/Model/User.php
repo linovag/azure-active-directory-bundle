@@ -1,6 +1,6 @@
 <?php
 
-namespace OpcodingAADBundle\Entity;
+namespace OpcodingAADBundle\Model;
 
 use Symfony\Component\Security\Core\User\UserInterface;
 
